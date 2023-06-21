@@ -1,28 +1,43 @@
-import { Counter, Gauge } from '@sentio/sdk'
-import { ERC20Processor } from '@sentio/sdk/eth/builtin'
-import { X2y2Processor } from './types/eth/x2y2.js'
+import { GlobalProcessor } from "@sentio/sdk/eth";
+import { EthChainId } from '@sentio/chain'
 
-const rewardPerBlock = Gauge.register('reward_per_block', {
-  description: 'rewards for each block grouped by phase',
-  unit: 'x2y2',
-})
-const tokenCounter = Counter.register('token')
+import { PromisePool } from '@supercharge/promise-pool'
 
-X2y2Processor.bind({ address: '0xB329e39Ebefd16f40d38f07643652cE17Ca5Bac1' }).onBlockInterval(async (_, ctx) => {
-  const phase = (await ctx.contract.currentPhase()).toString()
-  const reward = (await ctx.contract.rewardPerBlockForStaking()).scaleDown(18)
-  rewardPerBlock.record(ctx, reward, { phase })
-})
-
-const filter = ERC20Processor.filters.Transfer(
-  '0x0000000000000000000000000000000000000000',
-  '0xb329e39ebefd16f40d38f07643652ce17ca5bac1'
-)
-
-ERC20Processor.bind({ address: '0x1e4ede388cbc9f4b5c79681b7f94d36a11abebc9' }).onEventTransfer(
-  async (event, ctx) => {
-    const val = event.args.value.scaleDown(18)
-    tokenCounter.add(ctx, val)
-  },
-  filter // filter is an optional parameter
+GlobalProcessor.bind({
+    startBlock: 17529715,
+    network: EthChainId.ETHEREUM,
+}).onBlockInterval(
+    async (b, ctx) => {
+        let addresses = new Set<string>()
+        for (const trace of b.traces || []) {
+            if (trace.action.from) {
+                addresses.add(trace.action.from)
+            }
+            if (trace.action.to) {
+                addresses.add(trace.action.to)
+            }
+        }
+        console.log("addresses count:", addresses.size)
+        let i = 0
+        await PromisePool
+            .for(Array.from(addresses))
+            .onTaskStarted((address, pool) => {
+                if (++i % 20 == 0) {
+                    console.log(`done: ${pool.processedPercentage().toFixed(2)}%`)
+                }
+            })
+            .withConcurrency(4)
+            .handleError(async (err, addr) => {
+                console.error(`sync ${addr} error:`, err)
+            })
+            .process(async address =>
+                fetch("https://test.sentio.xyz/api/v1/solidity/sync_contract?address=" + address + "&disableOptimizer=false"))
+    },
+    1,
+    1,
+    {
+        block: true,
+        transaction: true,
+        trace: true,
+    }
 )

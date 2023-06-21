@@ -11,7 +11,8 @@
     "postinstall": "sentio gen"
   },
   "dependencies": {
-    "@sentio/sdk": "^2.19.0"
+    "@sentio/sdk": "^2.19.0",
+    "@supercharge/promise-pool": "^2.4.0"
   },
   "devDependencies": {
     "@sentio/cli": "^2.9.2",
