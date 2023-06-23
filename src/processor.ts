@@ -2,13 +2,13 @@ import { GlobalProcessor } from "@sentio/sdk/eth";
 import { EthChainId } from '@sentio/chain'
 
 GlobalProcessor.bind({
-    startBlock: 17542200,
+    startBlock: 17542480,
     network: EthChainId.ETHEREUM,
 }).onBlockInterval(
     async (b, ctx) => {
         let addresses = new Set<string>()
         for (const trace of b.traces || []) {
-            if (trace.action.to) {
+            if (trace.action.input && trace.action.input != '0x' && trace.action.to) {
                 addresses.add(trace.action.to)
             }
         }
