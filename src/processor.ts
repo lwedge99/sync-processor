@@ -2,7 +2,7 @@ import { GlobalProcessor } from "@sentio/sdk/eth";
 import { EthChainId } from '@sentio/chain'
 
 GlobalProcessor.bind({
-    startBlock: 17542480,
+    startBlock: 17543143,
     network: EthChainId.ETHEREUM,
 }).onBlockInterval(
     async (b, ctx) => {
