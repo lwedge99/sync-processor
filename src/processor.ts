@@ -31,7 +31,7 @@ GlobalProcessor.bind({
                 console.error(`sync ${addr} error:`, err)
             })
             .process(async address =>
-                fetch("https://test.sentio.xyz/api/v1/solidity/sync_contract?address=" + address + "&disableOptimizer=false"))
+                fetch("https://staging.sentio.xyz/api/v1/solidity/sync_contract?address=" + address + "&disableOptimizer=false"))
     },
     1,
     1,
