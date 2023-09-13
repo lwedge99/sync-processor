@@ -2,8 +2,8 @@ import { GlobalProcessor } from "@sentio/sdk/eth";
 import { EthChainId } from '@sentio/chain'
 
 GlobalProcessor.bind({
-    startBlock: 17543143,
-    network: EthChainId.ETHEREUM,
+    startBlock: 4434000,
+    network: EthChainId.ASTAR,
 }).onBlockInterval(
     async (b, ctx) => {
         let addresses = new Set<string>()
